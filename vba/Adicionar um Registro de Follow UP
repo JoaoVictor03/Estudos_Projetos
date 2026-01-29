@@ -1,0 +1,48 @@
+Private Sub bt_fup_Click()
+    Dim TabelaHist As ListObject
+    Dim NovaLinha As ListRow
+    Dim idSelecionado As Variant
+    
+    ' 1. Verifica se um cliente foi selecionado e se há texto
+
+    If txt_textoFUP.Value = "" Then
+        MsgBox "Digite o resumo do contato!", vbExclamation
+        Exit Sub
+    End If
+    
+    ' 2. Pega o ID do cliente selecionado (está na coluna 0 da ListBox)
+    idSelecionado = Me.ListBox_CLientesFUP.List(Me.ListBox_CLientesFUP.ListIndex, 0)
+    
+    ' 3. Adiciona na tabela de Histórico
+    Set TabelaHist = ThisWorkbook.Worksheets("Historico").ListObjects("tFollowUp")
+    Set NovaLinha = TabelaHist.ListRows.Add
+    
+    With NovaLinha
+        .Range(1) = idSelecionado           ' ID do Cliente
+        .Range(2) = Date                    ' Data de hoje automática
+        .Range(3) = Me.txt_textoFUP.Value    ' Texto do corretor
+    End With
+    
+    ' 4. Limpa e avisa
+    Me.txt_textoFUP = ""
+    MsgBox "Follow-up registrado para o cliente ID: " & idSelecionado, vbInformation
+    Call Atualizar_Historicos
+End Sub
+
+Public Sub Atualizar_Historicos()
+
+       Dim Plan_Historico As Worksheet
+       Dim Tabela_Historico As ListObject
+       
+       'Definir as planilhas
+       Set Plan_Historico = Worksheets("Historico")
+       Set Tabela_Historico = Plan_Historico.ListObjects("tFollowUp")
+       
+       With ListBox_historico
+              .List = Tabela_Historico.DataBodyRange.Value
+              .ColumnCount = 3
+              .ColumnHeads = True
+              .ColumnWidths = "30; 50; 150"
+       End With
+       
+End Sub
