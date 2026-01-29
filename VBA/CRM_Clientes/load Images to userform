@@ -1,0 +1,20 @@
+Public Sub Att_grafico1()
+       Dim Planilha As Worksheet
+       Dim Grafico As Object
+   
+       'Definir a Planilha e o gráfico
+       Set Planilha = Sheets("Clientes")
+       Set Grafico = Planilha.ChartObjects("grafico")
+       
+       
+       'Exportar o gráfico como imagem e carregar no userform
+       Caminho = ThisWorkbook.Path & "\" & Grafico.Name & ".jpg"
+       Grafico.Chart.Export Caminho
+       Grafico.Height = 78
+       Grafico.Width = 150
+       
+       
+       grafico1.Picture = LoadPicture(Caminho)
+       grafico1.PictureSizeMode = fmPictureSizeModeClip
+       
+End Sub
