@@ -1,0 +1,246 @@
+Private Sub bt_Att_Clientes_Click()
+       Call Atualizar_Lista_Clientes
+       
+End Sub
+Private Sub bt_att_Empr_Click()
+      Call Atualizar_Lista_Empreendimentos
+      
+End Sub
+
+
+Private Sub bt_att_Graficos_Click()
+       Call Att_grafico1
+       Call Att_grafico2
+End Sub
+
+
+Private Sub bt_Cadastrar_cliente_Click()
+       Call Cadastrar_Cliente
+       
+       
+End Sub
+
+Private Sub UserForm_Initialize()
+       
+       Call Att_tem_imovel
+       Call Carregar_Clientes_FUP
+       Call Atualizar_Historicos
+End Sub
+
+Public Sub Atualizar_Lista_Clientes()
+       'Carregar os dados para dentro da minha listbox de clientes
+       Dim Planilha1 As Worksheet
+       Dim tabela As ListObject
+       
+       'Setar a planilha e a tabela
+       Set Planilha1 = Worksheets("Clientes")
+       Set tabela = Planilha1.ListObjects("tClientes")
+       
+       ListBox_Clientes.List = tabela.DataBodyRange.Value
+       ListBox_Clientes.ColumnCount = 6
+       ListBox_Clientes.ColumnHeads = True
+       
+End Sub
+
+
+Public Sub Atualizar_Lista_Empreendimentos()
+       Dim Planilha2 As Worksheet
+       Dim tabela As ListObject
+       
+       'Setar a planilha e a tabela
+       Set Planilha2 = Worksheets("Empreendimentos")
+       Set tabela = Planilha2.ListObjects("tEmpreendimentos")
+       
+       ListBox_empreendimentos.List = tabela.DataBodyRange.Value
+       ListBox_empreendimentos.ColumnCount = 6
+       ListBox_empreendimentos.ColumnHeads = True
+      
+End Sub
+
+
+Public Sub Att_grafico1()
+       Dim Planilha As Worksheet
+       Dim Grafico As Object
+   
+       'Definir a Planilha e o gráfico
+       Set Planilha = Sheets("Clientes")
+       Set Grafico = Planilha.ChartObjects("grafico")
+       
+       
+       'Exportar o gráfico como imagem e carregar no userform
+       Caminho = ThisWorkbook.Path & "\" & Grafico.Name & ".jpg"
+       Grafico.Chart.Export Caminho
+       Grafico.Height = 78
+       Grafico.Width = 150
+       
+       
+       grafico1.Picture = LoadPicture(Caminho)
+       grafico1.PictureSizeMode = fmPictureSizeModeClip
+       
+End Sub
+
+
+Public Sub Att_grafico2()
+       Dim Planilha As Worksheet
+       Dim Grafico As Object
+   
+       'Definir a Planilha e o gráfico
+       Set Planilha = Sheets("Empreendimentos")
+       Set Grafico = Planilha.ChartObjects("grafico2")
+       
+       
+       'Exportar o gráfico como imagem e carregar no userform
+       Caminho = ThisWorkbook.Path & "\" & Grafico.Name & ".jpg"
+       Grafico.Chart.Export Caminho
+       Grafico.Height = 150
+       Grafico.Width = 204
+       
+       
+       
+       grafico2.Picture = LoadPicture(Caminho)
+       grafico2.PictureSizeMode = fmPictureSizeModeZoom
+       
+End Sub
+
+'Sub desenvolvida para poder cadastrar os clientes na baste
+Public Sub Cadastrar_Cliente()
+              'Dimensionar as variaveis
+              Dim tabela As ListObject
+              Dim Planilha As Worksheet
+              Dim NovaLinha As ListRow
+              Dim Novo_Id  As Long
+              
+              'Definir os objetos
+              Set Planilha = Worksheets("Clientes")
+              Set tabela = Planilha.ListObjects("tClientes")
+'              Debug.Print (Tabela.Name)
+
+              'Adicionar uma nova linha no objeto tabela.
+              'Para isso, devemos usar listrows.add
+              
+              Set NovaLinha = tabela.ListRows.Add
+              
+              Novo_Id = WorksheetFunction.Max(tabela.ListColumns(1).DataBodyRange) + 1
+              
+              
+              With NovaLinha
+                     .Range(1) = Novo_Id
+                     .Range(2) = txt_nome
+                     .Range(3) = txt_idade
+                     .Range(4) = txt_Email
+                     .Range(5) = txt_telefone
+                     .Range(6) = cb_Imovel.Value
+             End With
+             
+             MsgBox "Cliente Cadastrado!", vbOKOnly, "Cadastrar novo Cliente"
+             
+             Call Carregar_Clientes_FUP
+             
+End Sub
+
+Sub Att_tem_imovel()
+
+       cb_Imovel.AddItem ("Sim")
+       cb_Imovel.AddItem ("Não")
+       
+End Sub
+
+Private Sub Carregar_Clientes_FUP()
+       Dim Tabela_Clientes As ListObject
+       Dim Plan_Clientes As Worksheet
+       
+       
+       Set Plan_Clientes = Worksheets("Clientes")
+       Set Tabela_Clientes = Plan_Clientes.ListObjects("tClientes")
+       
+       'Carrega os dados da tabela clientes para a listagem
+       ListBox_CLientesFUP.List = Tabela_Clientes.DataBodyRange.Value
+       ListBox_CLientesFUP.ColumnCount = 6
+       ListBox_CLientesFUP.ColumnHeads = True
+       
+End Sub
+
+
+Private Sub bt_fup_Click()
+    Dim TabelaHist As ListObject
+    Dim NovaLinha As ListRow
+    Dim idSelecionado As Variant
+    
+    ' 1. Verifica se um cliente foi selecionado e se há texto
+
+    If txt_textoFUP.Value = "" Then
+        MsgBox "Digite o resumo do contato!", vbExclamation
+        Exit Sub
+    End If
+    
+    ' 2. Pega o ID do cliente selecionado (está na coluna 0 da ListBox)
+    idSelecionado = Me.ListBox_CLientesFUP.List(Me.ListBox_CLientesFUP.ListIndex, 0)
+    
+    ' 3. Adiciona na tabela de Histórico
+    Set TabelaHist = ThisWorkbook.Worksheets("Historico").ListObjects("tFollowUp")
+    Set NovaLinha = TabelaHist.ListRows.Add
+    
+    With NovaLinha
+        .Range(1) = idSelecionado           ' ID do Cliente
+        .Range(2) = Date                    ' Data de hoje automática
+        .Range(3) = Me.txt_textoFUP.Value    ' Texto do corretor
+    End With
+    
+    ' 4. Limpa e avisa
+    Me.txt_textoFUP = ""
+    MsgBox "Follow-up registrado para o cliente ID: " & idSelecionado, vbInformation
+    Call Atualizar_Historicos
+End Sub
+
+Public Sub Atualizar_Historicos()
+
+       Dim Plan_Historico As Worksheet
+       Dim Tabela_Historico As ListObject
+       
+       'Definir as planilhas
+       Set Plan_Historico = Worksheets("Historico")
+       Set Tabela_Historico = Plan_Historico.ListObjects("tFollowUp")
+       
+       With ListBox_historico
+              .List = Tabela_Historico.DataBodyRange.Value
+              .ColumnCount = 3
+              .ColumnHeads = True
+              .ColumnWidths = "30; 50; 150"
+       End With
+       
+End Sub
+
+
+Private Sub bt_Att_Grafico_FUP_Click()
+       Dim Plan_FUP As Worksheet
+       Dim Grafico As Object
+   
+       'Definir a Planilha e o gráfico
+       Set Planilha = Sheets("Historico")
+       Set Grafico = Planilha.ChartObjects("linha_historico")
+       
+       
+       'Exportar o gráfico como imagem e carregar no userform
+       Caminho = ThisWorkbook.Path & "\" & Grafico.Name & ".jpg"
+       Grafico.Chart.Export Caminho
+       
+       grafico_fup.Picture = LoadPicture(Caminho)
+      grafico_fup.PictureSizeMode = fmPictureSizeModeClip
+      
+End Sub
+
+
+Private Sub bt_cadastra_imovel_Click()
+       'Macro para cadastrar as informações do imóvel
+       'Definir as variáveis de dimensão
+       Dim Plan_empreend As Worksheet
+       Dim Tabela_empreend As ListObject
+       Dim Nova_Linha As ListRow 'ListRow, porque o VBA entende tabelas como "lists" devido ao seu histórico
+       
+       'Setar os objetos
+       Set Plan_empreend = Worksheets("Empreendimentos")
+       Set Tabela_empreend = Plan_empreend.ListObjects("tEmpreendimentos")
+       
+       Set Nova_Linha = Tabela_empreend.ListRows.Add
+       
+End Sub
